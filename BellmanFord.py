@@ -1,49 +1,39 @@
-# Import necessary libraries and modules
+# bellmanford.py
 import networkx as nx
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
-import matplotlib.animation as animation
-from pages.bellmanford import bellman_ford
 
-# Create a graph with fake cities, places, and weights
-G = nx.Graph()
-G.add_nodes_from(['Delhi', 'CP', 'Lajpat Nagar', 'Kolkata', 'Mumbai', 'Chennai', 'Jaipur', 'Hyderabad'])
-G.add_edges_from([('Delhi', 'CP', {'weight': 2}),
-                  ('Delhi', 'Lajpat Nagar', {'weight': 1}),
-                  ('CP', 'Kolkata', {'weight': 3}),
-                  ('Lajpat Nagar', 'Mumbai', {'weight': 4}),
-                  ('Kolkata', 'Chennai', {'weight': 5}),
-                  ('Mumbai', 'Chennai', {'weight': 2}),
-                  ('Chennai', 'Jaipur', {'weight': 3}),
-                  ('Jaipur', 'Delhi', {'weight': 4}),
-                  ('Hyderabad', 'Jaipur', {'weight': 6})])
+import networkx as nx
 
-# Apply Bellman-Ford algorithm
-start_node = 'Delhi'
-end_node = 'Jaipur'
-bellman_ford_paths = bellman_ford(G, start_node)
+def bellman_ford(graph, start_node, end_node=None):
+    # Get the number of nodes in the graph
+    num_nodes = len(graph.nodes)
 
-# Matplotlib setup
-pos = nx.spring_layout(G)  # Layout for better visualization
-fig, ax = plt.subplots()
+    # Initialize distances and predecessors
+    distances = {node: float('inf') for node in graph.nodes}
+    predecessors = {node: None for node in graph.nodes}
+    distances[start_node] = 0
 
-# Draw the graph
-nx.draw(G, pos, with_labels=True, node_size=700, node_color='skyblue', font_size=10, ax=ax)
+    # Relax edges repeatedly
+    for _ in range(num_nodes - 1):
+        for edge in graph.edges(data=True):
+            source, target, data = edge
+            weight = data.get('weight', 1)  # Default weight is 1 if not specified
+            if distances[source] + weight < distances[target]:
+                distances[target] = distances[source] + weight
+                predecessors[target] = source
 
-# Animation function
-def update(frame):
-    # Highlight the edges in the Bellman-Ford shortest path from 'Delhi' to 'Jaipur'
-    path_edges = []
-    for i in range(len(bellman_ford_paths[frame]) - 1):
-        path_edges.append((bellman_ford_paths[frame][i], bellman_ford_paths[frame][i + 1]))
+    # Check for negative cycles
+    for edge in graph.edges(data=True):
+        source, target, data = edge
+        weight = data.get('weight', 1)  # Default weight is 1 if not specified
+        if distances[source] + weight < distances[target]:
+            raise ValueError("Graph contains a negative cycle")
 
-    # Draw the graph with highlighted edges
-    nx.draw(G, pos, with_labels=True, node_size=700, node_color='skyblue', font_size=10, ax=ax)
-    nx.draw_networkx_edges(G, pos, edgelist=path_edges, edge_color='r', width=2)
+    # Reconstruct the shortest paths
+    shortest_paths = {node: nx.shortest_path(graph, source=start_node, target=node) for node in graph.nodes}
+    
+    # If end_node is specified, return the shortest path from start_node to end_node
+    if end_node is not None:
+        shortest_path_start_to_end = nx.shortest_path(graph, source=start_node, target=end_node)
+        return shortest_path_start_to_end
 
-# Create an animation
-ani = animation.FuncAnimation(fig=fig, func=update, frames=len(bellman_ford_paths), interval=1000, repeat=False)
-
-# Show the animation
-plt.show()
+    return shortest_paths

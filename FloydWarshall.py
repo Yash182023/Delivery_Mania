@@ -1,48 +1,22 @@
-import networkx as nx
+# floydwarshall.py
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
-import matplotlib.animation as animation
-from pages.floydwarshall import floyd_warshall
 
-# Create a graph with fake cities, places, and weights
-G = nx.Graph()
-G.add_nodes_from(['Delhi', 'CP', 'Lajpat Nagar', 'Kolkata', 'Mumbai', 'Chennai', 'Jaipur', 'Hyderabad'])
-G.add_edges_from([('Delhi', 'CP', {'weight': 2}),
-                  ('Delhi', 'Lajpat Nagar', {'weight': 1}),
-                  ('CP', 'Kolkata', {'weight': 3}),
-                  ('Lajpat Nagar', 'Mumbai', {'weight': 4}),
-                  ('Kolkata', 'Chennai', {'weight': 5}),
-                  ('Mumbai', 'Chennai', {'weight': 2}),
-                  ('Chennai', 'Jaipur', {'weight': 3}),
-                  ('Jaipur', 'Delhi', {'weight': 4}),
-                  ('Hyderabad', 'Jaipur', {'weight': 6})])
+def floyd_warshall(graph):
+    num_nodes = len(graph.nodes)
+    inf = float('inf')
+    shortest_paths_matrix = np.full((num_nodes, num_nodes), inf)
 
-# Apply Floyd-Warshall algorithm
-shortest_paths_matrix = floyd_warshall(G)
+    for i, j, data in graph.edges(data=True):
+        weight = data.get('weight', 1)  # Default weight is 1 if not specified
+        node_i = list(graph.nodes).index(i)
+        node_j = list(graph.nodes).index(j)
+        shortest_paths_matrix[node_i, node_j] = weight
+        shortest_paths_matrix[node_j, node_i] = weight
 
-# Matplotlib setup
-pos = nx.spring_layout(G)  # Layout for better visualization
-fig, ax = plt.subplots()
+    for k in range(num_nodes):
+        for i in range(num_nodes):
+            for j in range(num_nodes):
+                if shortest_paths_matrix[i, k] + shortest_paths_matrix[k, j] < shortest_paths_matrix[i, j]:
+                    shortest_paths_matrix[i, j] = shortest_paths_matrix[i, k] + shortest_paths_matrix[k, j]
 
-# Draw the graph
-nx.draw(G, pos, with_labels=True, node_size=700, node_color='skyblue', font_size=10, ax=ax)
-
-# Animation function
-def update(frame):
-    # Highlight the edges in the shortest path from 'Hyderabad' to 'Jaipur'
-    path_edges = []
-    mumbai_index = list(G.nodes).index('Hyderbad')
-    jaipur_index = list(G.nodes).index('CP')
-    if shortest_paths_matrix[mumbai_index, jaipur_index] < float('inf'):
-        path_edges.append(('Hyderabad', 'CP'))
-
-    # Draw the graph with highlighted edges
-    nx.draw(G, pos, with_labels=True, node_size=700, node_color='skyblue', font_size=10, ax=ax)
-    nx.draw_networkx_edges(G, pos, edgelist=path_edges, edge_color='r', width=2)
-
-# Create an animation
-ani = animation.FuncAnimation(fig=fig, func=update, frames=len(shortest_paths_matrix), interval=1000, repeat=False)
-
-# Show the animation
-plt.show()
+    return shortest_paths_matrix
