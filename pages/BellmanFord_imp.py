@@ -99,11 +99,8 @@ def update(frame):
 # Create an animation
 ani = animation.FuncAnimation(fig=fig, func=update, frames=len(bellman_ford_paths), interval=1000, repeat=False)
 
-gif_path = "bf_animation.gif"
-ani.save(gif_path, writer="pillow", fps=0)
+gif_path = "bell_animation.gif"
+ani.save(gif_path, writer='pillow', fps=1)
 
 # Display the saved GIF using Streamlit
-with open(gif_path, "rb") as file:
-    gif_bytes = file.read()
-
-st.image(gif_bytes, use_column_width=True)
+st.image(gif_path, use_column_width=True)
