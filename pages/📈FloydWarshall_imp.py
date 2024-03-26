@@ -60,6 +60,29 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import matplotlib.animation as animation
 from floydwarshall import floyd_warshall
+import time
+
+style = """
+<style>
+     @import 'https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap';
+    .main{
+        background: rgb(62,0,74);
+        background: linear-gradient(164deg, rgba(62,0,74,1) 0%, rgba(116,0,240,1) 55%, rgba(182,0,242,1) 100%);
+    }
+    
+    h1{
+        font-family: "Poppins", sans-serif;
+        font-weight: 700;
+        font-style: normal;
+        color: #ffffff;
+    }
+</style>
+"""
+
+
+st.markdown(style, unsafe_allow_html=True)
+
+st.title("Floyd-Warshall Algorithm")
 
 # Create a graph with fake cities, places, and weights
 G = nx.Graph()
@@ -75,7 +98,27 @@ G.add_edges_from([('Delhi', 'CP', {'weight': 2}),
                   ('Hyderabad', 'Jaipur', {'weight': 6})])
 
 # Apply Floyd-Warshall algorithm
-shortest_paths_matrix = floyd_warshall(G)
+#shortest_paths_matrix = floyd_warshall(G)
+
+num_iterations = 10
+
+# Initialize a list to store the execution times
+execution_times = []
+
+# Run the A* algorithm multiple times
+for _ in range(num_iterations):
+    start_time = time.time()
+    shortest_paths_matrix = floyd_warshall(G)
+    end_time = time.time()
+    execution_time_fw = end_time - start_time
+    execution_times.append(execution_time_fw)
+
+# Calculate the average execution time
+average_execution_time_fw = sum(execution_times) / num_iterations
+
+st.write(f"Average execution time over {num_iterations} iterations: {average_execution_time_fw:.6f} seconds")
+
+
 
 # Matplotlib setup
 pos = nx.spring_layout(G)  # Layout for better visualization

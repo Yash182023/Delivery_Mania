@@ -320,6 +320,28 @@ import matplotlib.animation as animation
 from astar import astar  # Import the A* algorithm
 import streamlit as st
 import base64
+import time
+
+
+style = """
+<style>
+     @import 'https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap';
+    .main{
+        background: rgb(0,4,33);
+        background: linear-gradient(164deg, rgba(0,4,33,1) 0%, rgba(11,0,134,1) 54%, rgba(5,220,255,1) 100%);
+    }
+    
+    h1{
+        font-family: "Poppins", sans-serif;
+        font-weight: 700;
+        font-style: normal;
+        color: #ffffff;
+    }
+</style>
+"""
+
+
+st.markdown(style, unsafe_allow_html=True)
 
 def draw_graph(G, pos, ax):
     nx.draw(G, pos, with_labels=True, node_size=700, node_color='skyblue', font_size=10, ax=ax)
@@ -367,12 +389,39 @@ def heuristic(node, goal):
     return np.linalg.norm(np.array(pos[node]) - np.array(pos[goal]))
 
 # Calculate the shortest path using A* algorithm
-shortest_path_length = astar(G, start_node, end_node, heuristic=heuristic)
+# start_time = time.time()
+# shortest_path_length = astar(G, start_node, end_node, heuristic=heuristic)
+# end_time = time.time()
+
+# execution_time = end_time - start_time
+# st.write(f"Execution time: {execution_time:.10f} seconds")
+
+# Define the number of iterations to run the algorithm
+
+num_iterations = 10
+
+# Initialize a list to store the execution times
+execution_times = []
+
+# Run the A* algorithm multiple times
+for _ in range(num_iterations):
+    start_time = time.time()
+    shortest_path_length = astar(G, start_node, end_node, heuristic=heuristic)
+    end_time = time.time()
+    execution_time= end_time - start_time
+    execution_times.append(execution_time)
+
+# Calculate the average execution time
+average_execution_time_astar = sum(execution_times) / num_iterations
+
+st.write(f"Average execution time over {num_iterations} iterations: {average_execution_time_astar:.6f} seconds")
+
+
 shortest_path = nx.shortest_path(G, source=start_node, target=end_node)
 
 # Create an animation
-ani = animation.FuncAnimation(fig=fig, func=update, frames=len(shortest_path), fargs=(G, pos, shortest_path, ax),
-                              interval=1000, repeat=False)
+
+ani = animation.FuncAnimation(fig=fig, func=update, frames=len(shortest_path), fargs=(G, pos, shortest_path, ax),interval=1000, repeat=False)
 
 # Save the animation as a GIF using imagemagick
 gif_path = "astar_animation.gif"
